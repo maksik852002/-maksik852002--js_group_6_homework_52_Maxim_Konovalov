@@ -1,67 +1,58 @@
 import React, {Component} from 'react';
-import './bootstrap.min.css';
+import nanoid from 'nanoid';
 import Task from './components/task/task';
+import Form from './components/form/form';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 class App extends Component {
   state = {
     tasks : [
-      {inputValue : '', id:''}
+      {title:'Buy Milk', id: nanoid()},
+      {title:'Walk with Dog', id: nanoid()},
+      {title:'Do homework', id: nanoid()},
     ],
-    showTasks:false
+    newTask: '',
   };
 
-  updateInputValue = (e) => {
-    this.setState({
-      inputValue: e.target.value
-    });
+  doneTask = (id) => {
+    const index = this.state.tasks.findIndex(t=> t.id === id);
+    const tasks = [...this.state.tasks]
+    tasks[index] = {...tasks[index],isChecked:!tasks[index].isChecked}
+    this.setState({tasks});
   }
 
-  addTask = () => {
-    const tasks = [] 
-    tasks.push({todotext:this.state.inputValue, id:'sdgsdg'})
-    this.setState({tasks, showTasks: true});
-    
+  addTask = (e) => {
+    e.preventDefault();
+    const task = {title:this.state.newTask, id: nanoid()};
+    this.setState({tasks: [...this.state.tasks, task], newTask: ''});
   }
 
   removeTask = id => {
-    const taskIndex = this.state.tasks.findIndex(t=> t.id === id)
-    const tasks = [...this.state.tasks]
-    tasks.splice(taskIndex, 1);
-
-    this.setState({tasks})
+    const index = this.state.tasks.findIndex(t=> t.id === id);
+    const tasks = [...this.state.tasks];
+    tasks.splice(index, 1);
+    this.setState({tasks});
   }
-
-
-  render = () => {
-    let newTask = null
-    if (this.state.showTasks) {
-      newTask = (this.state.tasks.map((task)=>(
-        <Task 
+  
+  render = () =>  (
+    <div className="container">
+      <Form 
+      value = {this.state.newTask}
+      click = {e => this.addTask(e)}
+      change = {e => this.setState({newTask: e.target.value})}
+      />
+      {this.state.tasks.map((task) => (
+        <Task
           key = {task.id}
-          todotext={task.todotext}
-          remove={()=> this.removeTask(task.id)}
+          todotext={task.title}
+          done = {task.isChecked}
+          remove={() => this.removeTask(task.id)}
+          checked= {() => this.doneTask(task.id)}
         />
-        ))
-      )
-    }
-
-    return (
-      <div className="container">
-        <form className="input">
-          <div className="input-group mb-3">
-            <input onChange = {this.updateInputValue} type="text" className="form-control" placeholder="Add new task" aria-label="Recipient's username" aria-describedby="button-addon2"/>
-            <div className="input-group-append">
-              <button onClick = {this.addTask} className="btn btn-primary" type="submit" id="button-addon2">ADD</button>
-            </div>
-          </div>
-        </form>
-        {newTask}
-        {console.log(this.state)}
-        </div>
-    );
-  }
- 
+      ))}
+    </div>
+  );
 }
 
 export default App;
